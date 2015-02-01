@@ -1,8 +1,6 @@
 %define BOARD_TIZEN_B2 tizen_b2
 %define BOARD_TIZEN_B2_SMK_DIS tizen_b2_smk_dis
 
-%define BOARD_OPT_TIMA_EN _tima_en
-
 Name: linux-3.4-exynos3250
 Summary: The Linux Kernel
 Version: 1.0.0
@@ -25,19 +23,16 @@ BuildRequires:  module-init-tools elfutils-devel
 BuildRequires:	python
 BuildRequires:	gcc
 BuildRequires:	bash
-ExclusiveArch:  %arm
+ExclusiveArch:	%arm i586 i686
 
 %description
 The Linux Kernel, the operating system core itself
 
 %define BOARDS %{BOARD_TIZEN_B2}
 
-%if 0%{?sec_product_feature_tima}
-%define OPTS %{BOARD_OPT_TIMA_EN}
-%else
 %define OPTS ""
-%endif
 
+%ifarch %arm
 %{lua:
 for targets in string.gmatch(rpm.expand("%{BOARDS}"), "[%w_-]+")
 do
@@ -73,6 +68,7 @@ print("\n")
 print("%description -n linux-3.4-exynos3250_"..targets.."-debuginfo \n")
 print("This package provides the exynos3250_eur linux kernel's debugging files. \n")
 end }
+%endif
 
 %package -n kernel-headers-3.4-exynos3250
 License:        TO_BE_FILLED
@@ -80,6 +76,7 @@ Summary:        Linux support headers for userspace development
 Group:          TO_BE_FILLED/TO_BE_FILLED
 Provides:       kernel-headers
 Obsoletes:      kernel-headers
+ExclusiveArch:  %arm i586 i686
 
 %description -n kernel-headers-3.4-exynos3250
 This package provides userspaces headers from the Linux kernel.  These
@@ -90,6 +87,7 @@ headers are used by the installed headers for GNU glibc and other system
 License:        GPL
 Summary:        Linux support kernel map and etc for other package
 Group:          System/Kernel
+ExclusiveArch:	%arm
 
 %description -n kernel-devel-3.4-exynos3250
 This package provides kernel map and etc information.
@@ -98,6 +96,7 @@ This package provides kernel map and etc information.
 %setup -q
 
 %build
+%ifarch %arm
 %if 0%{?tizen_build_binary_release_type_eng}
 %define RELEASE_TYPE ENG
 %else
@@ -125,6 +124,7 @@ for i in %{BOARDS}; do
 	/bin/tar -zxf %{SOURCE0}
 	cd %{name}-%{version}
 done
+%endif
 
 %install
 mkdir -p %{buildroot}/usr
@@ -140,6 +140,7 @@ rm -f %{buildroot}/usr/include/asm*/io.h
 
 mkdir -p %{buildroot}/usr/share/license
 
+%ifarch %arm
 for i in %{BOARDS}; do
 	target=$i"%{OPTS}"
 
@@ -160,6 +161,7 @@ find %{buildroot}/var/tmp/kernel/ -name 'System.map' > develfiles.pre # for secu
 find %{buildroot}/var/tmp/kernel/ -name 'vmlinux' >> develfiles.pre   # for TIMA
 find %{buildroot}/var/tmp/kernel/ -name '*.ko' >> develfiles.pre      # for TIMA
 cat develfiles.pre | sed -e "s#%{buildroot}##g" | uniq | sort > develfiles
+%endif
 
 %clean
 rm -rf %_builddir
@@ -167,4 +169,6 @@ rm -rf %_builddir
 %files -n kernel-headers-3.4-exynos3250
 /usr/include/*
 
+%ifarch %arm
 %files -n kernel-devel-3.4-exynos3250 -f develfiles
+%endif
