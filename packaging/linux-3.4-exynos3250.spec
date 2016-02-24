@@ -118,23 +118,8 @@ for i in %{BOARDS}; do
 	make modules
 	make modules_install INSTALL_MOD_PATH=%_builddir/mod_$target
 
-	# prepare for devel package
-	find %{_builddir}/%{name}-%{version} -name ".tmp_vmlinux*" -exec rm -f {} \;
-	find %{_builddir}/%{name}-%{version} -name "\.*dtb*tmp" -exec rm -f {} \;
-	find %{_builddir}/%{name}-%{version} -name "*\.*tmp" -exec rm -f {} \;
-	find %{_builddir}/%{name}-%{version} -name "vmlinux" -exec rm -f {} \;
-	find %{_builddir}/%{name}-%{version} -name "bzImage" -exec rm -f {} \;
-	find %{_builddir}/%{name}-%{version} -name "zImage" -exec rm -f {} \;
-	find %{_builddir}/%{name}-%{version} -name "dzImage" -exec rm -f {} \;
-	find %{_builddir}/%{name}-%{version} -name "*.cmd" -exec rm -f {} \;
-	find %{_builddir}/%{name}-%{version} -name "*\.ko" -exec rm -f {} \;
-	find %{_builddir}/%{name}-%{version} -name "*\.o" -exec rm -f {} \;
-	find %{_builddir}/%{name}-%{version} -name "*\.S" -exec rm -f {} \;
-	find %{_builddir}/%{name}-%{version} -name "*\.c" -not -path "%{_builddir}/%{name}-%{version}/scripts/*" -exec rm -f {} \;
-
 	#remove all changed source codes for next build
 	cd %_builddir
-	mv %{name}-%{version} kernel-devel-$target
 	rm -rf %{name}-%{version}
 	/bin/tar -zxf %{SOURCE0}
 	cd %{name}-%{version}
@@ -156,8 +141,6 @@ rm -f %{buildroot}/usr/include/asm*/io.h
 mkdir -p %{buildroot}/usr/share/license
 
 %ifarch %arm
-mkdir -p %{buildroot}/var/tmp/kernel/devel
-
 for i in %{BOARDS}; do
 	target=$i"%{OPTS}"
 
@@ -170,8 +153,6 @@ for i in %{BOARDS}; do
 	mv %_builddir/System.map.$target %{buildroot}/var/tmp/kernel/kernel-$i/System.map
 	mv %_builddir/config.$target %{buildroot}/var/tmp/kernel/kernel-$i/config
 	mv %_builddir/vmlinux.$target %{buildroot}/var/tmp/kernel/kernel-$i/vmlinux
-
-	mv %_builddir/kernel-devel-$target %{buildroot}/var/tmp/kernel/devel/kernel-devel-$i
 
 	cp -vf COPYING %{buildroot}/usr/share/license/%{name}_$i
 done
@@ -190,5 +171,4 @@ rm -rf %_builddir
 
 %ifarch %arm
 %files -n kernel-devel-3.4-exynos3250 -f develfiles
-/var/tmp/kernel/devel/*
 %endif
